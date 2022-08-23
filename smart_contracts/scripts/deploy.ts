@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 async function main() {
   const WKND = await ethers.getContractFactory('WKND');
