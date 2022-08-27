@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./interfaces/IWKND.sol";
 
 contract WakandaBallot is Ownable{
 
@@ -24,7 +24,7 @@ contract WakandaBallot is Ownable{
 
     mapping(bytes32 => bool) registeredCandidates;
 
-    mapping(address => uint256) public voted;
+    mapping(address => bool) public voted;
 
     Candidate[] public candidates;
 
@@ -38,7 +38,7 @@ contract WakandaBallot is Ownable{
 
     uint256 totalVotes;
 
-    IERC20 public wknd;
+    IWKND public wknd;
 
     event NewChallenger(string indexed name, string indexed cult, uint age);
 
@@ -52,7 +52,7 @@ contract WakandaBallot is Ownable{
         startTime =  _startTime;
         endTime = _endTime;
 
-        wknd = IERC20(_wknd);
+        wknd = IWKND(_wknd);
     }
 
     modifier inState(VotingState state){
@@ -67,34 +67,23 @@ contract WakandaBallot is Ownable{
         registeredCandidates[_hash] = true;
     }
 
-    function vote(bytes32 _candidate, uint256 _voteNumber) public inState(VotingState.STARTED) {
-        address sender = msg.sender;
-        require(voted[sender] == uint256(0), 'Already voted');
+    function vote(bytes32 _candidate, address voter, uint256 _voteNumber) public onlyOwner inState(VotingState.STARTED) {
+        require(voter != address(0), "0 address can't vote");
+        require(!voted[voter], 'Already voted');
         require(registeredCandidates[_candidate],'Not a registered candidate');
         require(_voteNumber > uint256(0),'Wrong vote count number');
-        require(wknd.balanceOf(sender) >= _voteNumber, 'Vote number is bigger then ammount of WKND tokens owned for given address');
+        require(wknd.balanceOfAt(voter, wknd.getCurrentSnapshotId()) >= _voteNumber, 'Vote number is bigger then ammount of WKND tokens owned for given address');
 
-        wknd.transferFrom(sender, address(this), _voteNumber);
-        voted[sender] = _voteNumber;
+        voted[voter] = true;
         uint256 _index = findCandidate(_candidate);
 
         candidates[_index].count += _voteNumber;
-        voters.push(Voter(sender, _voteNumber, _candidate));
+        voters.push(Voter(voter, _voteNumber, _candidate));
         totalVotes += _voteNumber;
 
         _setUpWinner(candidates[_index]);
 
-        emit Voted(sender,_voteNumber, candidates[_index].name, candidates[_index].cult);
-    }
-
-    function unstake() public inState(VotingState.FINISHED) {
-        require(voted[msg.sender] > 0, 'Voter didnt stake any tokens');
-        address sender = msg.sender;
-        uint256 _balance = voted[sender];
-        voted[sender] = 0;
-
-        wknd.approve(address(this), _balance);
-        wknd.transferFrom(address(this), sender, _balance);
+        emit Voted(voter,_voteNumber, candidates[_index].name, candidates[_index].cult);
     }
 
     function winningCandidates () public view returns (Candidate[] memory _winners) {
@@ -102,42 +91,50 @@ contract WakandaBallot is Ownable{
     }
 
     function _setUpWinner(Candidate storage winn) private {
-        if(_containsWinner(winn)) return;
-        
+        if(_containsWinner(winn)) {
+            winners[findCandidate(winn.hash)] = winn;
+           _sortWinners();
+            emit NewChallenger(winn.name, winn.cult, winn.age); 
+            return;
+        }
+
         if(winners.length < 3){
             winners.push(winn);
+            _sortWinners();
             emit NewChallenger(winn.name, winn.cult, winn.age);
             return;
         }
 
-        uint index;
-        bool elementFound;
-
-        for(uint i = 0; i< winners.length; i++){
-            if(winn.count > winners[i].count){
-                index = i;
-                elementFound = true;
-                break;
-            }
+        if(_shouldInsert(winn.count)){
+            winners.push(winn);
+            _sortWinners();
+            winners.pop();
+            emit NewChallenger(winn.name, winn.cult, winn.age);
         }
-
-        if(!elementFound) return;
-
-        for(uint i = index; i < winners.length -1;i++)
-            winners[i+1] = winners[i];
-        
-        winners[index] = winn;
-        winners.pop();
-
-        emit NewChallenger(winn.name, winn.cult, winn.age);
     }
 
     function _containsWinner(Candidate storage winn) private view returns (bool){
-        for(uint index = 0; index < winners.length; index++) {
+        for(uint index = 0; index < winners.length; index++) 
             if(winners[index].hash == winn.hash) return true;
-        }
-
+        
         return false;
+    }
+
+    function _sortWinners() private{
+        Candidate memory _candidate;
+        for(uint i = 0; i < winners.length; i ++)
+            for(uint j = 0; j < winners.length -1; j ++)
+                if(winners[j].count < winners[j+1].count){
+                    _candidate = winners[j];
+                    winners[j] = winners[j+1];
+                    winners[j+1] = _candidate;
+                }
+    }
+
+    function _shouldInsert(uint256 count) private view returns (bool insertFlag){
+        for(uint i =0; i< winners.length; i++)
+            if(winners[i].count < count)
+                insertFlag = true;
     }
 
     function getElectionState() public view returns (VotingState state) { 

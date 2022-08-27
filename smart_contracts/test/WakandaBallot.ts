@@ -10,7 +10,7 @@ describe("WakandaBallot", function () {
     const startTime = await time.latest() + ONE_DAY;
     const endTime = startTime + THREE_DAYS;
 
-    const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
+    const [owner, otherAccount, thirdAccount, fourthAccount, fifthAccount] = await ethers.getSigners();
 
     const WKND = await ethers.getContractFactory("WKND");
     const wknd = await WKND.deploy();
@@ -26,8 +26,10 @@ describe("WakandaBallot", function () {
     
     await wknd.connect(otherAccount).mintToken();
     await wknd.connect(thirdAccount).mintToken();
+    await wknd.connect(fourthAccount).mintToken();
+    await wknd.connect(fifthAccount).mintToken();
 
-    return { wakandaBallot,wknd, startTime, endTime, listOfCandidates, owner, otherAccount, thirdAccount };
+    return { wakandaBallot,wknd, startTime, endTime, listOfCandidates, owner, otherAccount, thirdAccount, fourthAccount, fifthAccount };
   }
 
   describe("Deployment", function () {
@@ -57,7 +59,8 @@ describe("WakandaBallot", function () {
       const firstCandidate = await wakandaBallot.candidates(ethers.BigNumber.from("0"));
       const userBalance = await wknd.balanceOf(otherAccount.address);
       
-      await expect(wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, userBalance)).to.be.revertedWith('Voting is not in correct state');
+      await wknd.snapshot();
+      await expect(wakandaBallot.vote(firstCandidate.hash, otherAccount.address, userBalance)).to.be.revertedWith('Voting is not in correct state');
     });
 
     it('Should fail to add existing candidate', async function () {
@@ -75,7 +78,7 @@ describe("WakandaBallot", function () {
     });
 
     it('Should get correct vote state', async function () {
-      const { wakandaBallot, startTime } = await loadFixture(deployOneYearLockFixture);
+      const { wakandaBallot } = await loadFixture(deployOneYearLockFixture);
       const ONE_DAY = 24 * 60 * 60;
       const THREE_DAYS = 3 * 24 * 60 * 60;
 
@@ -101,7 +104,9 @@ describe("WakandaBallot", function () {
       const userBalance = await wknd.balanceOf(otherAccount.address);
       await wknd.connect(otherAccount).approve(wakandaBallot.address, userBalance);
       await increaseTime(ONE_DAY);
-      await wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, userBalance);
+      await wknd.snapshot();
+
+      await wakandaBallot.vote(firstCandidate.hash, otherAccount.address, userBalance);
 
       const result = await wakandaBallot.candidates(candidateId);
 
@@ -118,31 +123,17 @@ describe("WakandaBallot", function () {
     await wknd.connect(otherAccount).approve(wakandaBallot.address, userBalance);
 
     await increaseTime(ONE_DAY);
-    await wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, userBalance);
+    await wknd.snapshot();
+
+    await wakandaBallot.vote(firstCandidate.hash, otherAccount.address, userBalance);
     
     const thirdAccountAmount = await wknd.balanceOf(thirdAccount.address);
     await wknd.connect(thirdAccount).transfer(otherAccount.address, thirdAccountAmount);
 
-    await expect(wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, thirdAccountAmount)).to.be.revertedWith('Already voted');    
+    await expect(wakandaBallot.vote(firstCandidate.hash, otherAccount.address, thirdAccountAmount)).to.be.revertedWith('Already voted');    
 });
 
-it('Should reduce wknd user balance for number of casted votes', async function () {
-  const { wakandaBallot, otherAccount, wknd } = await loadFixture(deployOneYearLockFixture);
-  const ONE_DAY = 24 * 60 * 60;
-
-  const firstCandidate = await wakandaBallot.candidates(ethers.BigNumber.from("0"));
-  let balance = await wknd.balanceOf(otherAccount.address);
-  await wknd.connect(otherAccount).approve(wakandaBallot.address, balance);
-
-  await increaseTime(ONE_DAY);
-  await wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, balance);
-  
-  balance = await wknd.balanceOf(otherAccount.address);
-
-  expect(await wknd.balanceOf(otherAccount.address)).to.equal(ethers.BigNumber.from('0'));    
-});
-
-it('Should return correct winners', async function () {
+it('Should return two correct winners', async function () {
   const { wakandaBallot, otherAccount, thirdAccount, wknd } = await loadFixture(deployOneYearLockFixture);
   const ONE_DAY = 24 * 60 * 60;
 
@@ -157,9 +148,10 @@ it('Should return correct winners', async function () {
   await wknd.connect(thirdAccount).approve(wakandaBallot.address, secondUserBalance);
 
   await increaseTime(ONE_DAY);
+  await wknd.snapshot();
 
-  await wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, firstUserBalance);
-  await wakandaBallot.connect(thirdAccount).vote(secondCandidate.hash, secondUserBalance);
+  await wakandaBallot.vote(firstCandidate.hash, otherAccount.address, firstUserBalance);
+  await wakandaBallot.vote(secondCandidate.hash, thirdAccount.address, secondUserBalance);
 
   //get winners list
   const winners = await wakandaBallot.winningCandidates();
@@ -175,6 +167,45 @@ it('Should return correct winners', async function () {
   expect(secondWinner.count).to.equal(secondUserBalance);
 });
 
+it('Should return three corect winners', async function () {
+  const { wakandaBallot, otherAccount, thirdAccount, fourthAccount, fifthAccount, wknd } = await loadFixture(deployOneYearLockFixture);
+  const ONE_DAY = 24 * 60 * 60;
+
+  const firstCandidateId = ethers.BigNumber.from("0");
+  const secondCandidateId = ethers.BigNumber.from("1");
+  const thirdCandidateId = ethers.BigNumber.from("2");
+
+  const firstCandidate = await wakandaBallot.candidates(firstCandidateId);
+  const secondCandidate = await wakandaBallot.candidates(secondCandidateId);
+  const thirdCandidate = await wakandaBallot.candidates(thirdCandidateId);
+
+  await increaseTime(ONE_DAY);
+  await wknd.snapshot();
+
+  await wakandaBallot.vote(firstCandidate.hash, otherAccount.address, 1);
+  await wakandaBallot.vote(secondCandidate.hash, thirdAccount.address, 1);
+  await wakandaBallot.vote(thirdCandidate.hash, fourthAccount.address, 1);
+  await wakandaBallot.vote(thirdCandidate.hash, fifthAccount.address, 1);
+
+  //get winners list
+  const winners = await wakandaBallot.winningCandidates();
+  
+  const firstWinner = winners[0];
+  const secondWinner = winners[1];
+  const thirdWinner = winners[2];  
+
+  expect(winners.length).to.equal(3);
+
+  compareCandidates(thirdCandidate, firstWinner);
+  expect(firstWinner.count).to.equal(2);
+
+  compareCandidates(firstCandidate, secondWinner);
+  expect(secondWinner.count).to.equal(1);
+
+  compareCandidates(secondCandidate, thirdWinner);
+  expect(thirdWinner.count).to.equal(1);
+});
+
 it('Should emit Voted event', async function () {
   const { wakandaBallot, otherAccount, wknd } = await loadFixture(deployOneYearLockFixture);
   const ONE_DAY = 24 * 60 * 60;
@@ -185,63 +216,15 @@ it('Should emit Voted event', async function () {
   await wknd.connect(otherAccount).approve(wakandaBallot.address, balance);
 
   await increaseTime(ONE_DAY);
+  await wknd.snapshot();
 
-  await expect(wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, balance))
+  await expect(wakandaBallot.vote(firstCandidate.hash, otherAccount.address, balance))
               .to.emit(wakandaBallot, 'Voted')
               .withArgs(otherAccount.address, balance, firstCandidate.name, firstCandidate.cult);
-
 });
 });
 
-describe('Unstaking', function(){
-  it('Should fail to unstake before end of voting time', async function () {
-    const { wakandaBallot, otherAccount, wknd } = await loadFixture(deployOneYearLockFixture);
-    const ONE_DAY = 24 * 60 * 60;
-  
-    const firstCandidate = await wakandaBallot.candidates(ethers.BigNumber.from("0"));
-    let balance = await wknd.balanceOf(otherAccount.address);
-    await wknd.connect(otherAccount).approve(wakandaBallot.address, balance);
-  
-    await increaseTime(ONE_DAY);
-    await wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, balance);
-    
-    balance = await wknd.balanceOf(otherAccount.address);
-  
-    await expect(wakandaBallot.connect(otherAccount).unstake()).to.be.revertedWith('Voting is not in correct state');   
-  });
-
-  it('Should fail to unstake if user didn\'t vote', async function () {
-    const { wakandaBallot, otherAccount, wknd } = await loadFixture(deployOneYearLockFixture);
-    const FOUR_DAY = 4 * 24 * 60 * 60;
-        
-    await increaseTime(FOUR_DAY);
-
-    await expect(wakandaBallot.connect(otherAccount).unstake()).to.be.revertedWith('Voter didnt stake any tokens');   
-  });
-
-  it('Should unstake successfully', async function () {
-    const { wakandaBallot, otherAccount, wknd } = await loadFixture(deployOneYearLockFixture);
-    const ONE_DAY =  24 * 60 * 60;
-    const FOUR_DAY = 4 * ONE_DAY;
-
-    const prevBalance = await wknd.balanceOf(otherAccount.address);
-    await wknd.connect(otherAccount).approve(wakandaBallot.address, prevBalance);
-    await increaseTime(ONE_DAY);
-
-    const firstCandidate = await wakandaBallot.candidates(ethers.BigNumber.from("0"));
-    await wakandaBallot.connect(otherAccount).vote(firstCandidate.hash, prevBalance);
-    
-    await increaseTime(FOUR_DAY);
-
-    await wakandaBallot.connect(otherAccount).unstake();
-  
-    const currentBalance = await wknd.balanceOf(otherAccount.address);
-
-    expect(prevBalance).to.equal(currentBalance)
-  });
 });
-});
-
 
 interface CanidateResponse {
   candidates: [
