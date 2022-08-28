@@ -102,7 +102,6 @@ describe("WakandaBallot", function () {
       const candidateId = ethers.BigNumber.from("0");
       const firstCandidate = await wakandaBallot.candidates(candidateId);
       const userBalance = await wknd.balanceOf(otherAccount.address);
-      // await wknd.connect(otherAccount).approve(wakandaBallot.address, userBalance);
       await increaseTime(ONE_DAY);
       await wknd.snapshot();
 
@@ -120,7 +119,6 @@ describe("WakandaBallot", function () {
     const candidateId = ethers.BigNumber.from("0");
     const firstCandidate = await wakandaBallot.candidates(candidateId);
     const userBalance = await wknd.balanceOf(otherAccount.address);
-    // await wknd.connect(otherAccount).approve(wakandaBallot.address, userBalance);
 
     await increaseTime(ONE_DAY);
     await wknd.snapshot();
@@ -144,8 +142,6 @@ it('Should return two correct winners', async function () {
 
   const firstUserBalance = await wknd.balanceOf(otherAccount.address);
   const secondUserBalance = await wknd.balanceOf(thirdAccount.address);
-  // await wknd.connect(otherAccount).approve(wakandaBallot.address, firstUserBalance);
-  // await wknd.connect(thirdAccount).approve(wakandaBallot.address, secondUserBalance);
 
   await increaseTime(ONE_DAY);
   await wknd.snapshot();
@@ -213,8 +209,6 @@ it('Should emit Voted event', async function () {
   const firstCandidate = await wakandaBallot.candidates(ethers.BigNumber.from("0"));
   const balance = await wknd.balanceOf(otherAccount.address);
   
-  // await wknd.connect(otherAccount).approve(wakandaBallot.address, balance);
-
   await increaseTime(ONE_DAY);
   await wknd.snapshot();
 
@@ -225,14 +219,6 @@ it('Should emit Voted event', async function () {
 });
 
 });
-
-interface CanidateResponse {
-  candidates: [
-    name: string,
-    age: number,
-    cult: string
-  ]
-}
 
 async function getCandidates(url:string = 'https://wakanda-task.3327.io/list'){
   const listOfCandidates = (await axios.get(url)).data;

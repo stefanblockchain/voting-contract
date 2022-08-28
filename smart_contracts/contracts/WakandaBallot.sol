@@ -90,6 +90,10 @@ contract WakandaBallot is Ownable{
         _winners = winners;
     }
 
+    function getCandidates () public view returns (Candidate[] memory _candidates) {
+        _candidates = candidates;
+    }
+
     function _setUpWinner(Candidate storage winn) private {
         if(_containsWinner(winn)) {
             winners[findCandidate(winn.hash)] = winn;
