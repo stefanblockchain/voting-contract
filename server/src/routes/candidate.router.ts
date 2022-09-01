@@ -13,14 +13,30 @@ candidateRouter.get('/', async (request: Request, response: Response) => {
   });
 
 candidateRouter.get('/leaderboard', async (request: Request, response: Response) => {
+  try{
     const leaderBoard = await candidateService.getLeaderboard();
     return response.json({leaderboard: leaderBoard});
-    
+  }
+  catch(error:any){
+    console.error(`Leaderboard error occured: ${error.message}`);
+    response.status(500).json({message: 'Error occured in fetchin candidates leaderboard'});
+  } 
   });
 
   candidateRouter.post('/vote', async (request: Request, response: Response) => {
-    const voted = await candidateService.vote(request.body);
-    return response.json({voted: voted});
+    try{
+      const voted = await candidateService.vote(request.body);
+      return response.json({voted: voted});
+    }
+    catch(error: any){
+      console.error(`${error.message}`);
+      response.json({message: error.message});
+    }
+  });
+
+  candidateRouter.post('/sign', async (request: Request, response: Response) => {
+    const sign = await candidateService.sign(request.body.message);
+    return response.json({sign: sign});
     
   });
 

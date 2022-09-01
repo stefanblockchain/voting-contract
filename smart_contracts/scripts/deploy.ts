@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import axios from 'axios';
 
@@ -12,8 +12,6 @@ async function main() {
 
   await wknd.connect(owner).mintToken();
   await wknd.connect(otherAccount).mintToken();
-
-  await wknd.snapshot();
 
   const ONE_MONTH = 30 * 24 * 60 * 60;
   const ONE_MINUTE = 60;
@@ -29,6 +27,9 @@ async function main() {
    for(const candidate of listOfCandidates){
     await insertCandidate(candidate.name, candidate.cult, candidate.age, wakandaBallot);
    }
+
+   //only when you deploy on local network
+   await increaseTime(ONE_MINUTE);
 }
 
 main().catch((error) => {
@@ -43,5 +44,10 @@ async function getCandidates(url:string = 'https://wakanda-task.3327.io/list'){
 
 async function insertCandidate(name:string, cult:string, age:string, wakandaBallot:any){
   await wakandaBallot.addCandidate(name, cult, age);
+}
+
+async function increaseTime(timeInSeconds: number){
+  await ethers.provider.send('evm_increaseTime', [timeInSeconds]);
+  await network.provider.send("evm_mine");
 }
 

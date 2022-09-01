@@ -82,15 +82,12 @@ describe("WakandaBallot", function () {
       const ONE_DAY = 24 * 60 * 60;
       const THREE_DAYS = 3 * 24 * 60 * 60;
 
-      let result = await wakandaBallot.getElectionState();
       expect(await wakandaBallot.getElectionState()).to.equal(VotingStates.NOT_STARTED);
 
       await increaseTime(ONE_DAY);
-      result = await wakandaBallot.getElectionState();
       expect(await wakandaBallot.getElectionState()).to.equal(VotingStates.STARTED);
 
       await increaseTime(THREE_DAYS);
-      result = await wakandaBallot.getElectionState();
       expect(await wakandaBallot.getElectionState()).to.equal(VotingStates.FINISHED);
       
   });
