@@ -21,6 +21,16 @@ function mintToken() public {
     
 }
 
+function claimToken(address claimer) public onlyOwner {
+    require(!minted[claimer], 'Already minted token for this wallet address');
+    require(claimer != address(0), 'Address cant be 0');
+
+    minted[claimer] = true;
+
+    _mint(claimer, 1);
+    
+}
+
 function _beforeTokenTransfer(address from, address to, uint256 amount)
         internal
         override(ERC20, ERC20Snapshot)
