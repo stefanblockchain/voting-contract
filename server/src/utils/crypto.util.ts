@@ -23,4 +23,4 @@ const decrypt = (text: any): Object => {
     return decrypted.toString();
 }
 
-export {encrypt,decrypt};
+export { encrypt, decrypt };

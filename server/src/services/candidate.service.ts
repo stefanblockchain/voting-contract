@@ -58,10 +58,6 @@ export default class CandidateService {
         }
     }
 
-    public async sign(message: string) {
-        return this.candidateContractService.generateSignature(message);
-    }
-
     private setCacheInterval() {
         const _this = this;
         setInterval(async function () {

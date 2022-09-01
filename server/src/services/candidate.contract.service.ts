@@ -32,16 +32,12 @@ export default class CandidateContractService {
 
         await this.wkndContractService.createSnapshotIfNotExists();
 
-        if((await this.isUserVoted(address))) throw new Error('User already voted');
+        if ((await this.isUserVoted(address))) throw new Error('User already voted');
 
         return await wakandaBallot.connect(ownerWallet).vote(candidateHash, address, voteCount);
     }
 
     public async isUserVoted(userAddress: string) {
         return await wakandaBallot.voted(userAddress);
-    }
-
-    public async generateSignature(message: string): Promise<string> {
-        return await ownerWallet.signMessage(message);
     }
 }
