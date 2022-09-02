@@ -1,4 +1,4 @@
-import express, {Application} from 'express';
+import express, { Application } from 'express';
 import * as dotenv from "dotenv";
 import cors from 'cors';
 import routes from './routes/routes';
@@ -10,8 +10,8 @@ const app: Application = express();
 app.use(express.json());
 app.use(cors());
 
-app.use('/api',routes);
+app.use('/api', routes);
 
-const port: number = 3000 || process.env.PORT;
+const port: number = 3000;
 
-app.listen(port, ()=>console.log('Server started'));
+app.listen(port, () => console.log('Server started'));

@@ -26,4 +26,10 @@ export default class WKNDContractService {
         if (currentSnap.toNumber() === 0)
             return await this.createSnapshot();
     }
+
+    public async claimToken(address: string) {
+        if (await wknd.minted(address)) throw new Error(`Token already minted for address: ${address}`);
+
+        await wknd.connect(ownerWallet).claimToken(address);
+    }
 }
