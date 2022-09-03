@@ -1,6 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { VStack, Heading } from "@chakra-ui/layout";
+import BallotStatus from "../components/ballot.status";
 
 import Register from "../components/register";
 
@@ -10,10 +11,7 @@ const Home: NextPage = () => {
       <Head>
         <title>Wakanda Ballot</title>
       </Head>
-
-      <Heading as="h3" my={4}>
-        Welcome to Wakanda Ballot
-      </Heading>
+      <BallotStatus />
       <VStack>
         <Register />
       </VStack>

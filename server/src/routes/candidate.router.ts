@@ -26,11 +26,11 @@ candidateRouter.get('/leaderboard', async (request: Request, response: Response)
 candidateRouter.post('/vote', async (request: Request, response: Response) => {
   try {
     const voted = await candidateService.vote(request.body);
-    return response.json({ voted: voted });
+    return response.json({ message: 'Succesfully voted' });
   }
   catch (error: any) {
     console.error(`${error.message}`);
-    response.json({ message: error.message });
+    response.json({ message: 'Voting failed'});
   }
 });
 

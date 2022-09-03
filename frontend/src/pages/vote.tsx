@@ -1,12 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import { ethers } from "ethers";
 import { VStack } from "@chakra-ui/layout";
-import { Button, Text, Radio, RadioGroup, Input } from "@chakra-ui/react";
+import {
+  Button,
+  Text,
+  Radio,
+  RadioGroup,
+  Input,
+  useToast,
+} from "@chakra-ui/react";
 import axios from "axios";
 import wakandaBallotAbi from "../abis/WakandaBallot.json";
+import BallotStatus from "components/ballot.status";
 
 declare let window: any;
-const wakandaAddress = "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE";
+const wakandaAddress = process.env.WAKANDA_BALLOT || "";
 
 export default function vote() {
   const [balance, setBalance] = useState<string | undefined>();
@@ -18,6 +26,7 @@ export default function vote() {
   const [winners, setWinners] = useState<[] | undefined>();
 
   const inputRef = useRef(null);
+  const toast = useToast();
 
   useEffect(() => {
     if (!currentAccount || !ethers.utils.isAddress(currentAccount)) return;
@@ -52,7 +61,7 @@ export default function vote() {
 
   const fetchCandidates = async () => {
     const result = await axios.get(
-      "http://localhost:3000/api/candidate/leaderboard"
+      `${process.env.SERVER_URL}candidate/leaderboard`
     );
     setCandidateList(result.data.leaderboard);
     setVoteValue(result.data.leaderboard[0]?.hash);
@@ -75,7 +84,9 @@ export default function vote() {
       }
     );
     inputRef.current.value = "";
-    console.log(JSON.stringify(result));
+
+    showTost("message", result.data.message);
+
     await fetchCandidates();
   };
 
@@ -92,6 +103,16 @@ export default function vote() {
     for (let i = 0; i < result.length; i++) console.log(result[i]);
   };
 
+  const showTost = (title: string, message: string) => {
+    toast({
+      title: title,
+      description: message,
+      status: "success",
+      duration: 9000,
+      isClosable: true,
+    });
+  };
+
   return (
     <>
       <VStack>
@@ -102,6 +123,7 @@ export default function vote() {
             Connect Wallet
           </Button>
         )}
+        {currentAccount ? <BallotStatus /> : <></>}
         <RadioGroup onChange={setVoteValue} value={voteValue}>
           {candidateList ? (
             candidateList.map((item: any) => (
@@ -123,7 +145,11 @@ export default function vote() {
         )}
         {candidateList ? <Button onClick={voteAction}>Vote</Button> : <></>}
 
-        <Button onClick={getWinningCandidates}>Get Winning candidates</Button>
+        {currentAccount ? (
+          <Button onClick={getWinningCandidates}>Get Winning candidates</Button>
+        ) : (
+          <></>
+        )}
         <ul>
           {winners ? (
             winners.map((winner: any) => (

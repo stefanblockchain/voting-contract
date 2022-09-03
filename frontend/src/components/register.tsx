@@ -1,20 +1,35 @@
-import NextLink from "next/link";
-import { Flex, Button, Text, Input, HStack, VStack } from "@chakra-ui/react";
+import {
+  Flex,
+  Button,
+  Text,
+  Input,
+  HStack,
+  VStack,
+  useToast,
+} from "@chakra-ui/react";
 import { useRef } from "react";
 import axios from "axios";
 
 export default function Register() {
   const inputRef = useRef(null);
+  const toast = useToast();
 
   const handleClick = async () => {
     const walletAddress = inputRef.current.value;
     if (walletAddress === "") return;
     inputRef.current.value = "";
 
-    const result = await axios.post(`http://localhost:3000/api/token/claim`, {
+    const result = await axios.post(`${process.env.SERVER_URL}token/claim`, {
       address: walletAddress,
     });
-    console.log(result);
+
+    toast({
+      title: "Message",
+      description: result.data.message,
+      status: "success",
+      duration: 9000,
+      isClosable: true,
+    });
   };
 
   return (
