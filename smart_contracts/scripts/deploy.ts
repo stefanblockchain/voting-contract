@@ -3,19 +3,19 @@ import { time } from "@nomicfoundation/hardhat-network-helpers";
 import axios from 'axios';
 
 async function main() {
-  const [owner, otherAccount] = await ethers.getSigners();
-
   const WKND = await ethers.getContractFactory('WKND');
   const wknd = await WKND.deploy();
   await wknd.deployed();
   console.log("Wakanda token succesfully deployed to: ", wknd.address);
 
-  await wknd.connect(owner).mintToken();
-  await wknd.connect(otherAccount).mintToken();
-
   const ONE_MONTH = 30 * 24 * 60 * 60;
-  const ONE_MINUTE = 60;
-  const startTime = await time.latest() + ONE_MINUTE;
+  const ONE_DAY = 24 * 60 * 60;
+  // const startTime = await time.latest() + ONE_MDAY;
+  // const endTime = startTime + ONE_MONTH;
+
+  const currentTimestamp = await getTimestamp();
+
+  const startTime = currentTimestamp + ONE_DAY;
   const endTime = startTime + ONE_MONTH;
 
   const WakandaBallot = await ethers.getContractFactory("WakandaBallot");
@@ -24,12 +24,12 @@ async function main() {
 
   const listOfCandidates = await getCandidates();
 
-   for(const candidate of listOfCandidates){
+  for (const candidate of listOfCandidates) {
     await insertCandidate(candidate.name, candidate.cult, candidate.age, wakandaBallot);
-   }
+  }
 
-   //only when you deploy on local network
-   await increaseTime(ONE_MINUTE);
+  //only when you deploy on local network
+  //  await increaseTime(ONE_MINUTE);
 }
 
 main().catch((error) => {
@@ -37,17 +37,23 @@ main().catch((error) => {
   process.exitCode = 1;
 });
 
-async function getCandidates(url:string = 'https://wakanda-task.3327.io/list'){
+async function getCandidates(url: string = 'https://wakanda-task.3327.io/list') {
   const listOfCandidates = (await axios.get(url)).data;
   return listOfCandidates.candidates;
 }
 
-async function insertCandidate(name:string, cult:string, age:string, wakandaBallot:any){
+async function insertCandidate(name: string, cult: string, age: string, wakandaBallot: any) {
   await wakandaBallot.addCandidate(name, cult, age);
 }
 
-async function increaseTime(timeInSeconds: number){
+async function increaseTime(timeInSeconds: number) {
   await ethers.provider.send('evm_increaseTime', [timeInSeconds]);
   await network.provider.send("evm_mine");
+}
+
+async function getTimestamp() {
+  const blockNumBefore = await ethers.provider.getBlockNumber();
+  const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+  return blockBefore.timestamp;
 }
 
