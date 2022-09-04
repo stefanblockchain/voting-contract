@@ -45,4 +45,8 @@ function snapshot() public onlyOwner returns (uint256){
 function getCurrentSnapshotId() public view returns (uint256){
     return _getCurrentSnapshotId();
 }
+
+function decimals() public view virtual override returns (uint8) {
+        return 0;
+    }
 }

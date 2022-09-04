@@ -16,6 +16,10 @@ const config: HardhatUserConfig = {
     rinkeby: {
       url: process.env.INFURA_URL,
       accounts: [`${process.env.PRIVATE_KEY}`]
+    },
+    goerli: {
+      url: process.env.INFURA_URL,
+      accounts: [`${process.env.PRIVATE_KEY}`]
     }
   },
   etherscan: {

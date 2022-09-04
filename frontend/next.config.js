@@ -5,9 +5,9 @@ const nextConfig = {
   env: {
     SERVER_URL: 'http://localhost:3000/api/',
 
-    WAKANDA_BALLOT: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
+    WAKANDA_BALLOT: '0x36C02dA8a0983159322a80FFE9F24b1acfF8B570', //should be raplaced with wakanda_ballot contract address
 
-    WAKANDA_TOKEN: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+    WAKANDA_TOKEN: '0x5eb3Bc0a489C5A8288765d2336659EbCA68FCd00' // should be raplaced with wakanda_ballot contract address
   },
 }
 

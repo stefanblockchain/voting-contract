@@ -1,5 +1,4 @@
 import { ethers, network } from "hardhat";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
 import axios from 'axios';
 
 async function main() {
@@ -10,8 +9,6 @@ async function main() {
 
   const ONE_MONTH = 30 * 24 * 60 * 60;
   const ONE_DAY = 24 * 60 * 60;
-  // const startTime = await time.latest() + ONE_MDAY;
-  // const endTime = startTime + ONE_MONTH;
 
   const currentTimestamp = await getTimestamp();
 
@@ -29,7 +26,7 @@ async function main() {
   }
 
   //only when you deploy on local network
-  //  await increaseTime(ONE_MINUTE);
+  // await increaseTime(ONE_DAY);
 }
 
 main().catch((error) => {
