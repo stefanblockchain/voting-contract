@@ -58,3 +58,10 @@ Then in another terminal run this command:
 npx hardhat run --network localhost .\scripts\deploy.ts
 ```
 This command will deploy contracts and print their addresses for later use in server and frontend part.
+
+# Deployed contracts
+You can see deployed contracts on rinkeby test network here:
+
+WKND token: https://rinkeby.etherscan.io/address/0x73eca5244c430acbca9084e780cf617f78f4473d#code
+
+WKND Ballot: https://rinkeby.etherscan.io/address/0xAc24b2b80ae47802a73D948A36723CD938482cF0#code
