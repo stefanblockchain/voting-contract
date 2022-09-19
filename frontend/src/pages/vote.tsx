@@ -14,13 +14,14 @@ import wakandaBallotAbi from "../abis/WakandaBallot.json";
 import BallotStatus from "components/ballot.status";
 
 declare let window: any;
-const wakandaAddress = process.env.WAKANDA_BALLOT || "";
 
-export default function vote() {
-  const [balance, setBalance] = useState<string | undefined>();
+const wakandaAddress = process.env.WAKANDA_BALLOT || "";
+const desiredNetworkId = process.env.NETWORK_ID || "4";
+const networkName = process.env.NETWORK_NAME || "";
+
+export default function Vote() {
   const [currentAccount, setCurrentAccount] = useState<string | undefined>();
   const [chainId, setChainId] = useState<number | undefined>();
-  const [chainname, setChainName] = useState<string | undefined>();
   const [candidateList, setCandidateList] = useState<any | undefined>();
   const [voteValue, setVoteValue] = useState<string | "">();
   const [winners, setWinners] = useState<[] | undefined>();
@@ -30,15 +31,33 @@ export default function vote() {
 
   useEffect(() => {
     if (!currentAccount || !ethers.utils.isAddress(currentAccount)) return;
-    //client side code
+
     if (!window.ethereum) return;
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    provider.getBalance(currentAccount).then((result) => {
-      setBalance(ethers.utils.formatEther(result));
-    });
     provider.getNetwork().then((result) => {
       setChainId(result.chainId);
-      setChainName(result.name);
+
+      if (desiredNetworkId !== result.chainId.toString())
+        showTost(
+          "Wrong network chosen",
+          `It should be ${networkName} network`,
+          "error"
+        );
+    });
+
+    window.ethereum.on("accountsChanged", function (accounts: any) {
+      if (accounts.length === 0 || !ethers.utils.isAddress(accounts[0])) return;
+      setCurrentAccount(accounts[0]);
+    });
+
+    window.ethereum.on("networkChanged", function (networkId: any) {
+      setChainId(networkId);
+      if (networkId.toString() !== desiredNetworkId)
+        showTost(
+          "Wrong network chosen",
+          `It should be ${networkName} network`,
+          "error"
+        );
     });
   }, [currentAccount]);
 
@@ -56,7 +75,7 @@ export default function vote() {
       .then((accounts) => {
         if (accounts.length > 0) setCurrentAccount(accounts[0]);
       })
-      .catch((e) => console.log(e));
+      .catch((e) => console.error(e));
   };
 
   const fetchCandidates = async () => {
@@ -85,13 +104,14 @@ export default function vote() {
     );
     inputRef.current.value = "";
 
-    showTost("message", result.data.message);
+    showTost("message", result.data.message, "success");
 
     await fetchCandidates();
   };
 
   const getWinningCandidates = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const network = { name: networkName, chainId: Number(desiredNetworkId) };
+    const provider = ethers.providers.getDefaultProvider(network);
     const wakandaBallot = new ethers.Contract(
       wakandaAddress,
       wakandaBallotAbi,
@@ -100,14 +120,13 @@ export default function vote() {
 
     const result = await wakandaBallot.winningCandidates();
     setWinners(result);
-    for (let i = 0; i < result.length; i++) console.log(result[i]);
   };
 
-  const showTost = (title: string, message: string) => {
+  const showTost = (title: string, message: string, type: any) => {
     toast({
       title: title,
       description: message,
-      status: "success",
+      status: type,
       duration: 9000,
       isClosable: true,
     });

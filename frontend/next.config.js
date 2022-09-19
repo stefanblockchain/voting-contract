@@ -5,9 +5,13 @@ const nextConfig = {
   env: {
     SERVER_URL: 'http://localhost:3000/api/',
 
-    WAKANDA_BALLOT: '0x36C02dA8a0983159322a80FFE9F24b1acfF8B570', //should be raplaced with wakanda_ballot contract address
+    WAKANDA_BALLOT: '0x12818AE2dBc11F94543A4EA79d52E4dDF5F1eC90',
 
-    WAKANDA_TOKEN: '0x5eb3Bc0a489C5A8288765d2336659EbCA68FCd00' // should be raplaced with wakanda_ballot contract address
+    WAKANDA_TOKEN: '0xC146E1aB66cda6d949FdAAb23E45AEC0e16EfAd7',
+
+    NETWORK_ID: '4',
+
+    NETWORK_NAME: 'rinkeby'
   },
 }
 

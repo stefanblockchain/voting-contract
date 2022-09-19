@@ -6,6 +6,9 @@ import { VotingStateEnum } from "enums/voting.state.enum";
 
 declare let window: any;
 
+const desiredNetworkId = process.env.NETWORK_ID || "";
+const networkName = process.env.NETWORK_NAME || "";
+
 export default function BallotStatus() {
   const [electionState, setElectionState] = useState<string | undefined>();
 
@@ -15,7 +18,9 @@ export default function BallotStatus() {
 
   const getBallotStatus = async () => {
     if (!window.ethereum) return;
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const network = { name: networkName, chainId: Number(desiredNetworkId) };
+    const provider = ethers.providers.getDefaultProvider(network);
     const wkndBallotAddress = process.env.WAKANDA_BALLOT || "";
     const wakandaBallotContract = new ethers.Contract(
       wkndBallotAddress,
