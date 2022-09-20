@@ -62,6 +62,6 @@ This command will deploy contracts and print their addresses for later use in se
 # Deployed contracts
 You can see deployed contracts on rinkeby test network here:
 
-WKND token: https://rinkeby.etherscan.io/address/0x73eca5244c430acbca9084e780cf617f78f4473d#code
+WKND token: https://rinkeby.etherscan.io/address/0xFAB4557849D8eb1e08571c4B55F5b5da26ee5b37#code
 
-WKND Ballot: https://rinkeby.etherscan.io/address/0xAc24b2b80ae47802a73D948A36723CD938482cF0#code
+WKND Ballot: https://rinkeby.etherscan.io/address/0x766342ed8057f44a0554F72D00c666d3cB6E5B06#code
