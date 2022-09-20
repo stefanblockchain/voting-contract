@@ -16,6 +16,9 @@ async function main() {
   const endTime = startTime + ONE_MONTH;
 
   const WakandaBallot = await ethers.getContractFactory("WakandaBallot");
+  console.log(`startTime: ${startTime}`);
+  console.log(`endTime: ${endTime}`);
+  console.log(`wknd: ${wknd.address}`);
   const wakandaBallot = await WakandaBallot.deploy(startTime, endTime, wknd.address);
   console.log("WakandaBallot contract succesfully deployed to: ", wakandaBallot.address);
 

@@ -26,6 +26,8 @@ const config: HardhatUserConfig = {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
     apiKey: process.env.ETHERSCAN_KEY
+
+    // npx hardhat verify --network rinkeby 0x12818AE2dBc11F94543A4EA79d52E4dDF5F1eC90 1663241299 1665833299 "0xC146E1aB66cda6d949FdAAb23E45AEC0e16EfAd7"
   },
 };
 

@@ -24,10 +24,10 @@ describe("WakandaBallot", function () {
       await insertCandidate(candidate.name, candidate.cult, candidate.age, wakandaBallot);
     }
 
-    await wknd.connect(otherAccount).mintToken();
-    await wknd.connect(thirdAccount).mintToken();
-    await wknd.connect(fourthAccount).mintToken();
-    await wknd.connect(fifthAccount).mintToken();
+    await wknd.claimToken(otherAccount.address);
+    await wknd.claimToken(thirdAccount.address);
+    await wknd.claimToken(fourthAccount.address);
+    await wknd.claimToken(fifthAccount.address);;
 
     return { wakandaBallot, wknd, startTime, endTime, listOfCandidates, owner, otherAccount, thirdAccount, fourthAccount, fifthAccount };
   }
